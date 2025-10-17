@@ -1,30 +1,34 @@
 pipeline {
     agent any
 
-    environment {
-        SONAR_PROJECT_KEY = 'glpi'
-        SONAR_PROJECT_NAME = 'glpi-test'
-    }
-
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                git 'https://github.com/loibuib/laravel-ecommerce-api'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                // Your build steps (e.g., Maven, Gradle)
+                sh 'mvn clean install'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('sonarqube-server') {
-                    sh """
-                        sonar-scanner \
-                        -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                        -Dsonar.projectName=${SONAR_PROJECT_NAME} \
-                        -Dsonar.sources=. \
-                        -Dsonar.host.url=$SONAR_HOST_URL \
-                        -Dsonar.login=$SONAR_AUTH_TOKEN
-                    """
+                withSonarQubeEnv(installationName: 'sonarqube-server') { // Use the name configured in Jenkins
+                    // Execute the SonarQube Scanner
+                    sh 'sonar-scanner -Dsonar.projectKey=your_project_key -Dsonar.sources=src'
+                    // Add other SonarQube properties as needed (e.g., -Dsonar.java.binaries=target/classes)
                 }
+            }
+        }
+
+        stage('Quality Gate Check') {
+            steps {
+                // Optional: Wait for SonarQube analysis to complete and check quality gate status
+                waitForQualityGate abortPipeline: true
             }
         }
     }
