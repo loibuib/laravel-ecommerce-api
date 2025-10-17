@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        SONAR_PROJECT_KEY = 'sqa_0f384208e91ba7f6bbab7348ec907c48e915619f'
+        SONAR_PROJECT_KEY = 'glpi'
         SONAR_PROJECT_NAME = 'glpi-test'
         SONAR_HOST_URL = 'http://10.190.200.131:9000/'
         SONAR_AUTH_TOKEN = credentials('sqa_0f384208e91ba7f6bbab7348ec907c48e915619f')
