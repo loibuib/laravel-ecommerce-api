@@ -11,9 +11,12 @@ node {
   }
 
   stage('Generate SBOM') {
-    // Tạo SBOM bằng Syft và lưu lại artifact
     sh 'syft dir:. --output cyclonedx-json=sbom.json'
-    archiveArtifacts allowEmptyArchive: true, artifacts: 'sbom*', fingerprint: true, followSymlinks: false, onlyIfSuccessful: true
-    sh 'rm -rf sbom*'
+    archiveArtifacts allowEmptyArchive: true, artifacts: 'sbom.json', fingerprint: true
+  }
+
+  stage('Scan Vulnerabilities with Grype') {
+    sh 'grype sbom:sbom.json --output json > grype-report.json'
+    archiveArtifacts allowEmptyArchive: true, artifacts: 'grype-report.json', fingerprint: true
   }
 }
