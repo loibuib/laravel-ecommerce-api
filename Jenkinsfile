@@ -7,7 +7,6 @@ node {
         // Run TruffleHog scan, ignoring exit code so pipeline continues to parsing step
         sh ' /opt/venv/bin/trufflehog filesystem --repo_path ./ --json > trufflehog-report.json || true '
         archiveArtifacts artifacts: 'trufflehog-report.json', allowEmptyArchive: true
-        }
     }
 
     stage('SonarQube Analysis') {
