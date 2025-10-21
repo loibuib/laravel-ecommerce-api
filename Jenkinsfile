@@ -26,7 +26,7 @@ stage('Scan Vulnerabilities with Dependency-Check') {
     dependencyCheck(
         odcInstallation: 'owasp-dc',
         nvdCredentialsId: 'nvd-api',
-        additionalArguments: '-s . -f ALL -o dependency-check-reports'
+        additionalArguments: '--nvdApiDelay 1000 -s . -f ALL -o dependency-check-reports'
     )
 
     archiveArtifacts allowEmptyArchive: true, artifacts: 'dependency-check-reports/*', fingerprint: true
