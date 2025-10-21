@@ -20,12 +20,10 @@ node {
     archiveArtifacts allowEmptyArchive: true, artifacts: 'grype-report.json', fingerprint: true
   }
  
- stage('Dependency-Check') {
-    withCredentials([string(credentialsId: 'nvd-api', variable: 'nvd-api')]) {
-      dependencyCheck additionalArguments: "--nvdApiKey ${env.nvd-api}", odcInstallation: 'owasp-dc'
-      dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+  stage('Dependency-Check') {
+      dependencyCheck additionalArguments: '', odcInstallation: 'owasp-dc'
+      dependencyCheckPublisher pattern: ''
       archiveArtifacts allowEmptyArchive: true, artifacts: 'dependency-check-report.xml', fingerprint: true, followSymlinks: false, onlyIfSuccessful: true
       sh 'rm -rf dependency-check-report.xml*'
-    }
-  }
+	}
 }
