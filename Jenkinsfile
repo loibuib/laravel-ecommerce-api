@@ -20,13 +20,32 @@ node {
 	    archiveArtifacts allowEmptyArchive: true, artifacts: 'grype-report.json', fingerprint: true
 	}
   
-	stage('Dependency-Check') {
-		dependencyCheck additionalArguments: '--nvdApiResultsPerPage 2000 --format XML', 
-	        nvdCredentialsId: 'nvd-api', 
-            odcInstallation: 'owasp-dc'
-		dependencyCheckPublisher pattern: ''
-		dependencyCheck additionalArguments: '--data /var/jenkins_home/dependency-check-data'
-		archiveArtifacts allowEmptyArchive: true, artifacts: 'dependency-check-report.xml', fingerprint: true, followSymlinks: false, onlyIfSuccessful: true
-		sh 'rm -rf dependency-check-report.xml*'
-	}
+stage('Dependency-Check') {
+  steps {
+    // Run dependency check scan
+    dependencyCheck additionalArguments: '''
+      --nvdApiResultsPerPage 2000 
+      --data /var/jenkins_home/dependency-check-data 
+      --format XML
+      --prettyPrint
+    ''',
+    odcInstallation: 'owasp-dc',
+    nvdCredentialsId: 'nvd-api'
+
+    // Publish and archive results
+    dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+
+    archiveArtifacts(
+      allowEmptyArchive: true,
+      artifacts: 'dependency-check-report.xml',
+      fingerprint: true,
+      followSymlinks: false,
+      onlyIfSuccessful: true
+    )
+
+    // Clean workspace artifacts
+    sh 'rm -f dependency-check-report.xml*'
+  }
+}
+
 }
