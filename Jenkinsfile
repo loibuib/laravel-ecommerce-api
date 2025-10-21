@@ -20,16 +20,17 @@ node {
         archiveArtifacts allowEmptyArchive: true, artifacts: 'grype-report.json', fingerprint: true
     }
 
-stage('Scan Vulnerabilities with Dependency-Check') {
-    sh 'mkdir -p dependency-check-reports'  // Ensure output directory exists
+stage('OWASP FS SCAN') {
+        // Run Dependency-Check scan with arguments and specified tool
+        dependencyCheck(
+            odcInstallation: 'owasp-dc',
+            additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit'
+        )
 
-    dependencyCheck(
-        odcInstallation: 'owasp-dc',
-        nvdCredentialsId: 'nvd-api',
-        additionalArguments: '--nvdApiDelay 1000 -s . -f ALL -o dependency-check-reports'
-    )
-
-    archiveArtifacts allowEmptyArchive: true, artifacts: 'dependency-check-reports/*', fingerprint: true
-}
+        // Publish the XML report in Jenkins
+        dependencyCheckPublisher(
+            pattern: '**/dependency-check-report.xml'
+        )
+    }
 
 }
