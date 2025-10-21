@@ -21,12 +21,11 @@ node {
   }
   
 stage('Dependency-Check') {
-  dependencyCheck additionalArguments: '--nvdApiResultsPerPage 2000 --format XML', 
-                  nvdCredentialsId: 'nvd-api-key', 
-                  odcInstallation: 'owasp-dc'
-  dependencyCheckPublisher pattern: ''
-  archiveArtifacts allowEmptyArchive: true, artifacts: 'dependency-check-report.xml', fingerprint: true, followSymlinks: false, onlyIfSuccessful: true
-  sh 'rm -rf dependency-check-report.xml*'
-}
-
+      dependencyCheck additionalArguments: '--nvdApiResultsPerPage 2000 --format XML', 
+            nvdCredentialsId: 'nvd-api', 
+            odcInstallation: 'owasp-dc'
+      dependencyCheckPublisher pattern: ''
+      archiveArtifacts allowEmptyArchive: true, artifacts: 'dependency-check-report.xml', fingerprint: true, followSymlinks: false, onlyIfSuccessful: true
+      sh 'rm -rf dependency-check-report.xml*'
+    }
 }
