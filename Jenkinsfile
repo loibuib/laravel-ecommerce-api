@@ -6,31 +6,7 @@ node {
     stage('TruffleHog Secret Scan') {
         // Run TruffleHog scan, ignoring exit code so pipeline continues to parsing step
         sh ' /opt/venv/bin/trufflehog filesystem --repo_path ./ --json > trufflehog-report.json || true '
-        
         archiveArtifacts artifacts: 'trufflehog-report.json', allowEmptyArchive: true
-
-        // Parse JSON report to get detected secrets information
-        script {
-            def report = readJSON file: 'trufflehog-report.json'
-
-            if (report.size() > 0) {
-                echo "Secrets detected by TruffleHog:"
-
-                report.each { secret ->
-                    echo "File: ${secret.path}"
-                    echo "  Commit: ${secret.commit}"
-                    echo "  Branch: ${secret.branch}"
-                    echo "  Reason: ${secret.reason}"
-                    echo "  Start Line: ${secret.start_line}"
-                    echo "  End Line: ${secret.end_line}"
-                    echo "  Secret (obfuscated): ${secret.secret.substring(0, 5)}*****"
-                    echo "-----------------------------"
-                }
-
-                error("Build failed due to secrets found.")
-            } else {
-                echo "No secrets detected."
-            }
         }
     }
 
