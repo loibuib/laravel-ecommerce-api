@@ -19,4 +19,13 @@ node {
     sh 'grype sbom:sbom.json --output json > grype-report.json'
     archiveArtifacts allowEmptyArchive: true, artifacts: 'grype-report.json', fingerprint: true
   }
+
+  stage('Dependency-Check') {
+   steps {
+       dependencyCheck additionalArguments: '', odcInstallation: 'dep-check-auto'
+       dependencyCheckPublisher pattern: ''
+       archiveArtifacts allowEmptyArchive: true, artifacts: 'dependency-check-report.xml', fingerprint: true, followSymlinks: false, onlyIfSuccessful: true
+	   sh ' rm -rf dependency-check-report.xml*'
+   }
+  }
 }
