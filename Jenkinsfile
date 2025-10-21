@@ -21,31 +21,27 @@ node {
 	}
   
 stage('Dependency-Check') {
-  steps {
-    // Run dependency check scan
-    dependencyCheck additionalArguments: '''
-      --nvdApiResultsPerPage 2000 
-      --data /var/jenkins_home/dependency-check-data 
-      --format XML
-      --prettyPrint
-    ''',
-    odcInstallation: 'owasp-dc',
-    nvdCredentialsId: 'nvd-api'
+  dependencyCheck additionalArguments: '''
+    --nvdApiResultsPerPage 2000
+    --data /var/jenkins_home/dependency-check-data
+    --format XML
+    --prettyPrint
+  ''',
+  odcInstallation: 'owasp-dc',
+  nvdCredentialsId: 'nvd-api'
 
-    // Publish and archive results
-    dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+  dependencyCheckPublisher pattern: 'dependency-check-report.xml'
 
-    archiveArtifacts(
-      allowEmptyArchive: true,
-      artifacts: 'dependency-check-report.xml',
-      fingerprint: true,
-      followSymlinks: false,
-      onlyIfSuccessful: true
-    )
+  archiveArtifacts(
+    allowEmptyArchive: true,
+    artifacts: 'dependency-check-report.xml',
+    fingerprint: true,
+    followSymlinks: false,
+    onlyIfSuccessful: true
+  )
 
-    // Clean workspace artifacts
-    sh 'rm -f dependency-check-report.xml*'
-  }
+  sh 'rm -f dependency-check-report.xml*'
 }
+
 
 }
