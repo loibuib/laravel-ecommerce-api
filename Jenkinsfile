@@ -20,14 +20,16 @@ node {
         archiveArtifacts allowEmptyArchive: true, artifacts: 'grype-report.json', fingerprint: true
     }
 
-    stage('Scan Vulnerabilities with Dependency-Check') {
-        // Using Dependency-Check plugin with NVD API key credential ID 'nvd-api-key'
-        dependencyCheck(
-            odcInstallation: 'owasp-dc',            // Your Dependency-Check tool installation name
-            nvdCredentialsId: 'nvd-api',     // Credential ID for NVD API key stored in Jenkins
-            additionalArguments: '-s . -f ALL -o dependency-check-reports' // CLI arguments as string
-        )
-        // Archive Dependency-Check reports for review in Jenkins
-        archiveArtifacts allowEmptyArchive: true, artifacts: 'dependency-check-reports/*', fingerprint: true
-    }
+stage('Scan Vulnerabilities with Dependency-Check') {
+    sh 'mkdir -p dependency-check-reports'  // Ensure output directory exists
+
+    dependencyCheck(
+        odcInstallation: 'owasp-dc',
+        nvdCredentialsId: 'nvd-api',
+        additionalArguments: '-s . -f ALL -o dependency-check-reports'
+    )
+
+    archiveArtifacts allowEmptyArchive: true, artifacts: 'dependency-check-reports/*', fingerprint: true
+}
+
 }
