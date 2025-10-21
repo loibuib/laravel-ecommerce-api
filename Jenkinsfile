@@ -24,7 +24,7 @@ node {
 		dependencyCheck additionalArguments: '--nvdApiResultsPerPage 2000 --format XML', 
 	        nvdCredentialsId: 'nvd-api', 
             odcInstallation: 'owasp-dc'
-		dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+		dependencyCheckPublisher pattern: ''
 		dependencyCheck additionalArguments: '--data /var/jenkins_home/dependency-check-data'
 		archiveArtifacts allowEmptyArchive: true, artifacts: 'dependency-check-report.xml', fingerprint: true, followSymlinks: false, onlyIfSuccessful: true
 		sh 'rm -rf dependency-check-report.xml*'
