@@ -3,6 +3,21 @@ node {
         checkout scm
     }
 
+    stage('TruffleHog Secret Scan') {
+        sh '''
+            /opt/venv/bin/trufflehog filesystem --repo_path ./ --json > trufflehog-report.json
+        '''
+
+        archiveArtifacts artifacts: 'trufflehog-report.json', allowEmptyArchive: true
+
+        script {
+            def report = readJSON file: 'trufflehog-report.json'
+            if (report.size() > 0) {
+                error("Secrets found by TruffleHog, failing the build!")
+            }
+        }
+    }
+
     stage('SonarQube Analysis') {
         def scannerHome = tool 'SonarScanner'
         withSonarQubeEnv() {
@@ -20,17 +35,19 @@ node {
         archiveArtifacts allowEmptyArchive: true, artifacts: 'grype-report.json', fingerprint: true
     }
 
-stage('OWASP FS SCAN') {
-        // Run Dependency-Check scan with arguments and specified tool
+    stage('Dependency-Check Scan') {
+        sh 'mkdir -p dependency-check-reports'
+
         dependencyCheck(
             odcInstallation: 'owasp-dc',
-            additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit'
+            additionalArguments: '-s ./ -f HTML -f XML -o dependency-check-reports --disableYarnAudit --disableNodeAudit'
         )
 
-        // Publish the XML report in Jenkins
+        archiveArtifacts allowEmptyArchive: true, artifacts: 'dependency-check-reports/*.html', fingerprint: true
+        archiveArtifacts allowEmptyArchive: true, artifacts: 'dependency-check-reports/*.xml', fingerprint: true
+
         dependencyCheckPublisher(
-            pattern: '**/dependency-check-report.xml'
+            pattern: 'dependency-check-reports/dependency-check-report.xml'
         )
     }
-
 }
