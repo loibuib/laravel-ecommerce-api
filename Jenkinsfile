@@ -20,13 +20,15 @@ node {
     archiveArtifacts allowEmptyArchive: true, artifacts: 'grype-report.json', fingerprint: true
   }
   
-	stage('Dependency-Check') {
-		dependencyCheck additionalArguments: '--nvdApiResultsPerPage 2000 --format XML', 
-	        nvdCredentialsId: 'nvd-api', 
+stage('Dependency-Check') {
+    steps {
+        dependencyCheck additionalArguments: '--nvdApiResultsPerPage 2000 --format XML --data /var/jenkins_home/dependency-check-data',
+            nvdCredentialsId: 'nvd-api',
             odcInstallation: 'owasp-dc'
-		dependencyCheckPublisher pattern: ''
-        dependencyCheck additionalArguments: '--data /var/jenkins_home/dependency-check-data'
-		archiveArtifacts allowEmptyArchive: true, artifacts: 'dependency-check-report.xml', fingerprint: true, followSymlinks: false, onlyIfSuccessful: true
-		sh 'rm -rf dependency-check-report.xml*'
-	}
+        dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+        archiveArtifacts allowEmptyArchive: true, artifacts: 'dependency-check-report.xml', fingerprint: true, followSymlinks: false, onlyIfSuccessful: true
+        sh 'rm -rf dependency-check-report.xml*'
+    }
+}
+
 }
