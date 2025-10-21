@@ -7,9 +7,7 @@ node {
         sh '''
             /opt/venv/bin/trufflehog filesystem --repo_path ./ --json > trufflehog-report.json
         '''
-
         archiveArtifacts artifacts: 'trufflehog-report.json', allowEmptyArchive: true
-
         script {
             def report = readJSON file: 'trufflehog-report.json'
             if (report.size() > 0) {
