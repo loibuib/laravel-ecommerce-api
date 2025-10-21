@@ -1,47 +1,35 @@
 node {
-	stage('SCM') {
-		checkout scm
-	}
+    stage('SCM') {
+        checkout scm
+    }
 
-	stage('SonarQube Analysis') {
-	    def scannerHome = tool 'SonarScanner'
-	    withSonarQubeEnv() {
-		    sh "${scannerHome}/bin/sonar-scanner"
-	    }
-	}
+    stage('SonarQube Analysis') {
+        def scannerHome = tool 'SonarScanner'
+        withSonarQubeEnv() {
+            sh "${scannerHome}/bin/sonar-scanner"
+        }
+    }
 
-	stage('Generate SBOM') {
-	    sh 'syft dir:. --output cyclonedx-json=sbom.json'
-	    archiveArtifacts allowEmptyArchive: true, artifacts: 'sbom.json', fingerprint: true
-	}
+    stage('Generate SBOM') {
+        sh 'syft dir:. --output cyclonedx-json=sbom.json'
+        archiveArtifacts allowEmptyArchive: true, artifacts: 'sbom.json', fingerprint: true
+    }
 
-	stage('Scan Vulnerabilities with Grype') {
-	    sh 'grype sbom:sbom.json --output json > grype-report.json'
-	    archiveArtifacts allowEmptyArchive: true, artifacts: 'grype-report.json', fingerprint: true
-	}
-  
-stage('Dependency-Check') {
-  dependencyCheck additionalArguments: '''
-    --nvdApiResultsPerPage 2000
-    --data /var/jenkins_home/dependency-check-data
-    --format XML
-    --prettyPrint
-  ''',
-  odcInstallation: 'owasp-dc',
-  nvdCredentialsId: 'nvd-api'
+    stage('Scan Vulnerabilities with Grype') {
+        sh 'grype sbom:sbom.json --output json > grype-report.json'
+        archiveArtifacts allowEmptyArchive: true, artifacts: 'grype-report.json', fingerprint: true
+    }
 
-  dependencyCheckPublisher pattern: 'dependency-check-report.xml'
-
-  archiveArtifacts(
-    allowEmptyArchive: true,
-    artifacts: 'dependency-check-report.xml',
-    fingerprint: true,
-    followSymlinks: false,
-    onlyIfSuccessful: true
-  )
-
-  sh 'rm -f dependency-check-report.xml*'
-}
-
-
+    stage('Scan Vulnerabilities with Dependency-Check') {
+        // Using Dependency-Check plugin with NVD API key credential ID 'nvd-api-key'
+        dependencyCheck(
+            odcInstallation: 'owasp-dc',            // Your Dependency-Check tool installation name
+            nvdCredentialsId: 'nvd-api',     // Credential ID for NVD API key stored in Jenkins
+            scanPath: '.',                       // Path to scan, current directory
+            format: 'ALL',                      // Generate all reports: HTML, XML, JSON
+            outputDirectory: 'dependency-check-reports' // Directory for reports
+        )
+        // Archive Dependency-Check reports for review in Jenkins
+        archiveArtifacts allowEmptyArchive: true, artifacts: 'dependency-check-reports/*', fingerprint: true
+    }
 }
